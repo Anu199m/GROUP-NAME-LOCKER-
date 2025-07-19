@@ -4,8 +4,8 @@ const express = require("express");
 
 const appState = JSON.parse(fs.readFileSync("appstate.json", "utf-8"));
 
-const GROUP_THREAD_ID = "23889119697441127";
-const LOCKED_GROUP_NAME = "FATIMA RANDI ANU HERE :)";
+const GROUP_THREAD_ID = "24041654888825173";
+const LOCKED_GROUP_NAME = "KUNDAN X RAJ CHINTU KI MAA KI CHUT ME MOOTNE WALA ANU HERE :)";
 
 const checkGroupNameLoop = (api) => {
   const check = async () => {

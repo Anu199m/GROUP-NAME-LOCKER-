@@ -14,25 +14,29 @@ const checkGroupNameLoop = (api) => {
         console.error("Error getting thread info:", err);
       } else {
         if (info.name !== LOCKED_GROUP_NAME) {
-          console.log(`⚠️ Group name changed to "${info.name}", resetting...`);
-          api.setTitle(LOCKED_GROUP_NAME, GROUP_THREAD_ID, (err) => {
-            if (err) {
-              console.error("❌ Failed to reset name:", err);
-            } else {
-              console.log("🔒 Group name reset successfully.");
-            }
-          });
+          console.log(`⚠️ Group name changed to "${info.name}", resetting in 10 seconds...`);
+
+          // 🔁 10-second delay before changing name
+          setTimeout(() => {
+            api.setTitle(LOCKED_GROUP_NAME, GROUP_THREAD_ID, (err) => {
+              if (err) {
+                console.error("❌ Failed to reset name:", err);
+              } else {
+                console.log("🔒 Group name reset successfully after 10 seconds.");
+              }
+            });
+          }, 10000); // 10 seconds
         } else {
           console.log("✅ Group name is correct.");
         }
       }
 
-      // 🔁 Recursive timeout-based loop
-      setTimeout(check, 5000); // Every 5 sec
+      // 🔁 Repeat check every 5 sec
+      setTimeout(check, 5000);
     });
   };
 
-  check(); // Start the loop
+  check(); // Start loop
 };
 
 // 🟢 Login and Start Bot

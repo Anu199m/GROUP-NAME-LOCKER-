@@ -1,4 +1,4 @@
-const login = require("ws3-fca");
+const { default: login } = require("ws3-fca");
 const fs = require("fs");
 const express = require("express");
 
@@ -15,13 +15,13 @@ try {
 const GROUP_THREAD_ID = "24041654888825173";
 const LOCKED_GROUP_NAME = "KUNDAN X RAJ CHINTU KI MAA KI CHUT ME MOOTNE WALA ANU HERE :)";
 
-// Web server for uptime
+// Web server
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.get("/", (req, res) => res.send("✅ Bot is alive and monitoring group name."));
 app.listen(PORT, () => console.log(`🌐 Server running on port ${PORT}`));
 
-// Monitor every 60 seconds
+// Monitor loop (60 sec)
 const startBot = (api) => {
   const checkLoop = () => {
     api.getThreadInfo(GROUP_THREAD_ID, (err, info) => {

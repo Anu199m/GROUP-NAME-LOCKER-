@@ -2,66 +2,70 @@ const login = require("ws3-fca");
 const fs = require("fs");
 const express = require("express");
 
-const appState = JSON.parse(fs.readFileSync("appstate.json", "utf-8"));
+// Load appstate
+let appState;
+try {
+  appState = JSON.parse(fs.readFileSync("appstate.json", "utf-8"));
+} catch (e) {
+  console.error("❌ ERROR: 'appstate.json' file missing or invalid. Please add your Facebook session.");
+  process.exit(1);
+}
 
+// Group details
 const GROUP_THREAD_ID = "24041654888825173";
 const LOCKED_GROUP_NAME = "KUNDAN X RAJ CHINTU KI MAA KI CHUT ME MOOTNE WALA ANU HERE :)";
 
+// Web server for Render (keeps app alive)
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.get("/", (req, res) => res.send("✅ Bot is alive and locking group name."));
+app.listen(PORT, () => console.log(`🌐 Server running on port ${PORT}`));
 
-// ✅ Anti-sleep: Keep web server running (pinged by UptimeRobot)
-app.get("/", (req, res) => {
-  res.send("✅ Bot is alive and locking group name.");
-});
-
-app.listen(PORT, () => {
-  console.log(`🌐 Web server running on port ${PORT}`);
-});
-
-// 🔁 Group name check loop
+// Function to monitor group name (every 60 seconds)
 const startBot = (api) => {
   const checkLoop = async () => {
     try {
       api.getThreadInfo(GROUP_THREAD_ID, (err, info) => {
         if (err) {
           console.error("❌ Error fetching group info:", err);
-        } else {
-          if (info.name !== LOCKED_GROUP_NAME) {
-            console.log(`⚠️ Name changed to "${info.name}" — will reset in 10 seconds...`);
+          return;
+        }
+        if (!info) {
+          console.error("❌ No group info returned. Skipping...");
+          return;
+        }
 
-            setTimeout(() => {
-              api.setTitle(LOCKED_GROUP_NAME, GROUP_THREAD_ID, (err) => {
-                if (err) {
-                  console.error("❌ Failed to reset name:", err);
-                } else {
-                  console.log("🔒 Group name reset successfully after 10s.");
-                }
-              });
-            }, 10000); // Delay 10 sec
-          } else {
-            console.log("✅ Group name is correct.");
-          }
+        if (info.name !== LOCKED_GROUP_NAME) {
+          console.log(`⚠️ Group name changed to "${info.name}". Will reset in 10s...`);
+          setTimeout(() => {
+            api.setTitle(LOCKED_GROUP_NAME, GROUP_THREAD_ID, (err) => {
+              if (err) {
+                console.error("❌ Failed to reset name:", err);
+              } else {
+                console.log("🔒 Group name reset successfully.");
+              }
+            });
+          }, 10000);
+        } else {
+          console.log("✅ Group name is correct.");
         }
       });
     } catch (e) {
       console.error("❌ Unexpected error:", e);
     }
-
-    // 🔁 Repeat after 5 seconds
-    setTimeout(checkLoop, 5000);
+    // Run this function again after 60 seconds
+    setTimeout(checkLoop, 60000);
   };
 
-  checkLoop(); // Start loop
+  checkLoop();
 };
 
-// 🟢 Login to Facebook
+// Facebook login
 login({ appState }, (err, api) => {
   if (err) {
-    console.error("❌ Login Failed:", err);
+    console.error("❌ Facebook Login Failed:", err);
     return;
   }
-
-  console.log("✅ Logged in successfully");
+  console.log("✅ Logged in successfully!");
   startBot(api);
 });
